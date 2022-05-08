@@ -4,8 +4,6 @@
  * Plugin name: Benchmark Postmeta
  */
 
-declare( ticks=1 );
-
 if ( ! class_exists( WP_CLI::class ) ) {
 	return;
 }
