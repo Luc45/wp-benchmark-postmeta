@@ -49,6 +49,14 @@ class BenchmarkCommand {
 			\WP_CLI::error( 'Please pass --post-mode as an argument.' );
 		}
 
+		if ( ! function_exists( 'pcntl_fork' ) ) {
+			\WP_CLI::error( 'To run this in multi-thread you need the pcntl extension, eg: docker-php-ext-install pcntl' );
+		}
+
+		if ( ! function_exists( 'socket_create_pair' ) ) {
+			\WP_CLI::error( 'To run this in multi-thread you need the sockets extension, eg: docker-php-ext-install sockets' );
+		}
+
 		define( 'SAVEQUERIES', true );
 
 		$post_count = [
