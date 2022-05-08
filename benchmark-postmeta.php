@@ -68,8 +68,6 @@ class BenchmarkCommand {
 
 		$elapsed_time_reference = microtime( true );
 
-		$ary = [];
-
 		// How many postmeta to add to each post
 		$postmeta_min = $assoc_args['postmeta-min'] ?? 0;
 		$postmeta_max   = $assoc_args['postmeta-max'] ?? 10;
