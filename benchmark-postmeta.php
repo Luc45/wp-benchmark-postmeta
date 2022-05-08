@@ -4,6 +4,8 @@
  * Plugin name: Benchmark Postmeta
  */
 
+declare( ticks=1 );
+
 if ( ! class_exists( WP_CLI::class ) ) {
 	return;
 }
@@ -62,7 +64,7 @@ class BenchmarkCommand {
 			'10k_posts',
 		] : [ $assoc_args['post-mode'] ];
 
-		$benchmark = [];
+		$benchmark_parent = [];
 
 		$time_limit = 4 * HOUR_IN_SECONDS;
 
@@ -70,21 +72,53 @@ class BenchmarkCommand {
 
 		$ary = [];
 
+		socket_create_pair( AF_UNIX, SOCK_STREAM, 0, $ary );
+
+		$this->delete_all_benchmark();
+
 		// How many postmeta to add to each post
 		$postmeta_min = $assoc_args['postmeta-min'] ?? 0;
 		$postmeta_max   = $assoc_args['postmeta-max'] ?? 10;
 
 		for ( $meta_count = $postmeta_min; $meta_count <= $postmeta_max; $meta_count ++ ) {
-			$benchmark = array_merge( $benchmark, $this->execute_benchmark( $meta_count, $post_modes, $post_count, $elapsed_time_reference, $time_limit ) );
+			$pid = pcntl_fork();
+
+			if ( $pid == - 1 ) {
+				WP_CLI::error( 'Could not fork.' );
+			} else if ( ! $pid ) {
+				// child process
+				$benchmark_child = $this->execute_benchmark( $meta_count, $post_modes, $post_count, $elapsed_time_reference, $time_limit );
+
+				socket_write( $ary[0], wp_json_encode( $benchmark_child ), 2 * MB_IN_BYTES );
+				exit();
+			} else {
+				// parent process
+			}
 		}
 
-		$this->generate_html( $benchmark );
+		while ( pcntl_waitpid( 0, $status ) != - 1 ):
+			$status = pcntl_wexitstatus( $status );
+			printf( "Child %s exited" . PHP_EOL, $status );
+
+			$message = socket_read( $ary[1], 2 * MB_IN_BYTES, PHP_BINARY_READ );
+
+			$benchmark_parent = array_merge( $benchmark_parent, json_decode( $message, true ) );
+
+			WP_CLI::log( wp_json_encode( $benchmark_parent ) );
+		endwhile;
+
+		WP_CLI::log( 'Fork tasks completed.' );
+		$this->generate_html( $benchmark_parent );
 
 		exit;
 	}
 
 	protected function execute_benchmark( $meta_count, $post_modes, $post_count, $elapsed_time_reference, $time_limit ): array {
 		global $wpdb;
+
+		$wpdb->close();
+
+		$wpdb->db_connect();
 
 		if ( ! $wpdb->check_connection() ) {
 			WP_CLI::error( 'DB Connection down...' );
@@ -108,8 +142,6 @@ class BenchmarkCommand {
 		$benchmark[ $meta_k ] = [];
 
 		foreach ( $post_modes as $post_m ) {
-			$this->delete_all_benchmark();
-
 			$meta_input = array_combine( $generate_random_array(), $generate_random_array() );
 
 			$benchmark[ $meta_k ][ $post_m ] = [];
