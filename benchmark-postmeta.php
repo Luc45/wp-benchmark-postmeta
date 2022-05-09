@@ -181,21 +181,21 @@ class BenchmarkCommand {
 			global $wpdb;
 
 			$meta_key_in = '';
-			$concats     = '';
+			$meta_values = '';
 
 			foreach ( $meta_input as $k => $v ) {
 				$meta_key_in .= "'$k',";
-				$concats     .= sprintf( 'CONCAT(meta_key,",",meta_value) = "%s,%s" OR ', $k, wp_generate_uuid4() );
+				$meta_values .= sprintf( 'meta_key = \'%s\' AND meta_value = \'%s\' OR ', $k, wp_generate_uuid4() );
 			}
 
 			$meta_key_in = rtrim( $meta_key_in, ',' );
-			$concats  = rtrim( $concats, ' OR ' );
+			$meta_values = rtrim( $meta_values, ' OR ' );
 
 			$query = sprintf( <<<SQL
 SELECT wp_posts.*
        FROM wp_posts, wp_postmeta
 WHERE wp_posts.id = wp_postmeta.post_id
-  AND meta_key IN ($meta_key_in) AND ($concats)
+  AND meta_key IN ($meta_key_in) AND ($meta_values)
 GROUP BY wp_postmeta.post_id
 LIMIT 1
 SQL
