@@ -69,8 +69,8 @@ class BenchmarkCommand {
 		$elapsed_time_reference = microtime( true );
 
 		// How many postmeta to add to each post
-		$postmeta_min = $assoc_args['postmeta-min'] ?? 0;
-		$postmeta_max   = $assoc_args['postmeta-max'] ?? 10;
+		$postmeta_min = $assoc_args['postmeta-min'] ?? 1;
+		$postmeta_max = $assoc_args['postmeta-max'] ?? 10;
 
 		for ( $meta_count = $postmeta_min; $meta_count <= $postmeta_max; $meta_count ++ ) {
 			$benchmark = array_merge( $benchmark, $this->execute_benchmark( $meta_count, $post_modes, $post_count, $elapsed_time_reference, $time_limit ) );
@@ -162,6 +162,7 @@ class BenchmarkCommand {
 				$meta_query['relationship'] = 'OR';
 			}
 
+			/*
 			$args = [
 				'posts_per_page'   => 1,
 				'post_type'        => 'benchmark',
@@ -175,14 +176,38 @@ class BenchmarkCommand {
 			\WP_CLI::log( "Fetching 1 benchmark entry with args: " . wp_json_encode( $args, JSON_PRETTY_PRINT ) );
 
 			$posts = get_posts( $args );
+			*/
 
 			global $wpdb;
 
-			\WP_CLI::log( 'Last query: ' . wp_json_encode( $wpdb->last_query, JSON_PRETTY_PRINT ) );
+			$meta_key_in = '';
+			$concats     = '';
+
+			foreach ( $meta_input as $k => $v ) {
+				$meta_key_in .= "'$k',";
+				$concats     .= sprintf( 'CONCAT(meta_key,",",meta_value) = "%s,%s" OR ', $k, wp_generate_uuid4() );
+			}
+
+			$meta_key_in = rtrim( $meta_key_in, ',' );
+			$concats  = rtrim( $concats, ' OR ' );
+
+			$query = sprintf( <<<SQL
+SELECT wp_posts.*
+       FROM wp_posts, wp_postmeta
+WHERE wp_posts.id = wp_postmeta.post_id
+  AND meta_key IN ($meta_key_in) AND ($concats)
+GROUP BY wp_postmeta.post_id
+LIMIT 1
+SQL
+			);
+
+			$posts = $wpdb->get_results( $query );
+
+			\WP_CLI::log( 'Last query: ' . $wpdb->last_query );
 			\WP_CLI::log( 'Last error: ' . $wpdb->last_error );
 			\WP_CLI::log( 'Fetched posts: ' . count( $posts ) );
 
-			$expected_posts_found = empty( $meta_query ) ? 1 : 0;
+			$expected_posts_found = 0;
 
 			if ( count( $posts ) !== $expected_posts_found ) {
 				WP_CLI::error( "Fetched posts is not $expected_posts_found." );
