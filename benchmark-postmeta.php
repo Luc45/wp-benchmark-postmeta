@@ -32,7 +32,6 @@ class BenchmarkCommand {
 	 *   - 100_posts
 	 *   - 1k_posts
 	 *   - 10k_posts
-	 *   - 1M_posts
 	 * ---
 	 *
 	 * ## EXAMPLES
@@ -53,7 +52,6 @@ class BenchmarkCommand {
 			'100_posts'  => 100,
 			'1k_posts'   => 1000,
 			'10k_posts'  => 10000,
-			'100k_posts' => 100000,
 		];
 
 		$post_modes = $assoc_args['post-mode'] === 'all' ? [
