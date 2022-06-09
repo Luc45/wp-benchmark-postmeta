@@ -1,4 +1,4 @@
-This is a small WordPress plugin adds a WP-CLI command that benchmarks postmeta performance.
+This is a small WordPress plugin adds a WP-CLI command to benchmark postmeta performance.
 
 This was done to answer a question: When does it make sense to use a custom table instead of postmeta in a WordPress plugin?
 
