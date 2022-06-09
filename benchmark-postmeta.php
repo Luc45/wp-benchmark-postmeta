@@ -68,7 +68,7 @@ class BenchmarkCommand {
 
 		// How many postmeta to add to each post
 		$postmeta_min = $assoc_args['postmeta-min'] ?? 0;
-		$postmeta_max   = $assoc_args['postmeta-max'] ?? 10;
+		$postmeta_max = $assoc_args['postmeta-max'] ?? 10;
 
 		for ( $meta_count = $postmeta_min; $meta_count <= $postmeta_max; $meta_count ++ ) {
 			$benchmark = array_merge( $benchmark, $this->execute_benchmark( $meta_count, $post_modes, $post_count, $elapsed_time_reference, $time_limit ) );
