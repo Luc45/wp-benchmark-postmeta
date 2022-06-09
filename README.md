@@ -2,9 +2,11 @@ This is a small WordPress plugin adds a WP-CLI command to benchmark postmeta per
 
 This was done to answer a question: When does it make sense to use a custom table instead of postmeta in a WordPress plugin?
 
-A lot of big plugins have migrated to a custom table structure due to poor scalability performance of the postmeta. This benchmark was put together to measure exactly where the trade-off of complexity vs. speed of a custom table makes sense.
+A lot of big plugins have migrated to a custom table structure due to poor scalability performance of the postmeta. This benchmark was put together to measure exactly where the trade-off of complexity vs. speed of a custom table makes sense. 
 
 The benchmarks suggests that there's a **linear** time increase **when inserting** posts with multiple postmeta, and an **exponential** time increase **when getting** posts by their postmeta value.
+
+Essentially the answer seems to be: Custom table makes sense when you need to filter/find posts by multiple postmeta parameters.
 
 ![image](https://user-images.githubusercontent.com/9341686/172850032-f5a9199a-caeb-4f7a-aea0-77bc7b770e61.png)
 
@@ -54,8 +56,10 @@ get_posts( [
 ] );
 ```
 
+Another alternative before going down the route of custom tables, is using the available post table columns to store your data, such as excerpt, title, content, etc.
 
-### Usage:
+
+### How to run the benchmarks:
 - Place `benchmark-postmeta.php` in your wp-content/plugins folder
 - Run `wp benchmark run --post-mode=100_posts --postmeta-min=0 --postmeta-max=10`
 
