@@ -35,24 +35,26 @@ get_posts( [
   'post_type'        => 'benchmark',
   'post_status'      => 'draft',
   'meta_query'       => [
-    ['key' => 'foo1','value' => 'foo1',],
-    ['key' => 'foo2','value' => 'foo2',],
-    ['key' => 'foo3','value' => 'foo3',],
-    ['key' => 'foo4','value' => 'foo4',],
-    ['key' => 'foo5','value' => 'foo5',],
-    ['key' => 'foo6','value' => 'foo6',],
-    ['key' => 'foo7','value' => 'foo7',],
-    ['key' => 'foo7','value' => 'foo8',],
-    ['key' => 'foo7','value' => 'foo9',],
-    ['key' => 'foo7','value' => 'foo10',],
-    ['key' => 'foo12','value' => 'foo11',],
-    ['key' => 'foo12','value' => 'foo12',],
+    ['key' => 'foo1','value' => 'nonexisting1',],
+    ['key' => 'foo2','value' => 'nonexisting2',],
+    ['key' => 'foo3','value' => 'nonexisting3',],
+    ['key' => 'foo4','value' => 'nonexisting4',],
+    ['key' => 'foo5','value' => 'nonexisting5',],
+    ['key' => 'foo6','value' => 'nonexisting6',],
+    ['key' => 'foo7','value' => 'nonexisting7',],
+    ['key' => 'foo7','value' => 'nonexisting8',],
+    ['key' => 'foo7','value' => 'nonexisting9',],
+    ['key' => 'foo7','value' => 'nonexisting10',],
+    ['key' => 'foo12','value' => 'nonexisting11',],
+    ['key' => 'foo12','value' => 'nonexisting12',],
   ],
   'cache_results'    => false,
   'suppress_filters' => true,
   'fields'           => 'ids',
 ] );
 ```
+
+To fetch the posts, we use existing meta keys and random meta values, so that it always goes into a worst case scenario trying to find a match.
 
 Essentially the answer seems to be: Custom table makes sense when you need to filter/find posts by multiple postmeta parameters. Another alternative before going down the route of custom tables, is using the available post table columns to store your data, such as excerpt, title, content, etc.
 
